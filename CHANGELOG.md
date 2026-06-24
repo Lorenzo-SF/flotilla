@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-24
+
 ### Added
 - **47 components**, organised by purpose:
   - **Containers**: `divider`, `grid`, `stack`, `center`, `segment`, `sidebar`
@@ -46,3 +48,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Flotilla.Renderer`, default Tailwind classes.
 
 [0.1.0]: https://github.com/Lorenzo-SF/flotilla/releases/tag/v0.1.0
+
+[0.2.0]: https://github.com/Lorenzo-SF/flotilla/releases/tag/v0.2.0
