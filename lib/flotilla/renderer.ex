@@ -652,6 +652,9 @@ defmodule Flotilla.Renderer do
     page_btn = fn n ->
       active = if n == current, do: " bg-blue-500 text-white", else: " bg-white"
 
+      phx_change =
+        if on_change, do: ~s( phx-change="#{on_change}"), else: ""
+
       {:safe,
        [
          "<button class=\"px-2 py-1 border rounded",
@@ -659,7 +662,7 @@ defmodule Flotilla.Renderer do
          "\" data-page=\"",
          to_string(n),
          "\"",
-         ev,
+         phx_change,
          ">",
          to_string(n),
          "</button>"
@@ -688,6 +691,9 @@ defmodule Flotilla.Renderer do
         active_cls =
           if key == active, do: " border-b-2 border-blue-500 font-medium", else: " text-gray-600"
 
+        phx_change =
+          if on_change, do: ~s( phx-change="#{on_change}"), else: ""
+
         {:safe,
          [
            "<button class=\"px-4 py-2",
@@ -695,7 +701,7 @@ defmodule Flotilla.Renderer do
            "\" data-tab=\"",
            escape_attr(to_string(key)),
            "\"",
-           ev,
+           phx_change,
            ">",
            escape_html(label),
            "</button>"
