@@ -11,6 +11,7 @@ defmodule Flotilla.Renderer do
   """
 
   alias Flotilla.VDOM
+  alias Phoenix.LiveView.LiveStruct
 
   # Default Tailwind-style classes applied when `class:` is not given.
   @default_class_by_tag %{
@@ -849,28 +850,10 @@ defmodule Flotilla.Renderer do
       key = Map.get(item, :key)
       label = Map.get(item, :label, "")
       children = Map.get(item, :children, [])
-      has_children = children != []
       is_expanded = key in expanded
 
-      chevron =
-        if has_children do
-          ~s(<span class="text-gray-400 mr-1">) <>
-            if(is_expanded, do: "\u25BE", else: "\u25B8") <> "</span>"
-        else
-          "<span class=\"mr-1\"></span>"
-        end
-
-      children_html =
-        if has_children and is_expanded do
-          {:safe,
-           [
-             "<ul class=\"ml-4\">",
-             render_tree_items(children, expanded, depth + 1),
-             "</ul>"
-           ]}
-        else
-          ""
-        end
+      chevron = tree_chevron(children != [], is_expanded)
+      children_html = tree_children_html(children, expanded, depth, is_expanded)
 
       {:safe,
        [
@@ -883,6 +866,28 @@ defmodule Flotilla.Renderer do
        ]}
     end)
   end
+
+  defp tree_chevron(false, _is_expanded),
+    do: "<span class=\"mr-1\"></span>"
+
+  defp tree_chevron(true, true),
+    do: ~s(<span class="text-gray-400 mr-1">\u25BE</span>)
+
+  defp tree_chevron(true, false),
+    do: ~s(<span class="text-gray-400 mr-1">\u25B8</span>)
+
+  defp tree_children_html([], _expanded, _depth, _is_expanded), do: ""
+
+  defp tree_children_html(children, expanded, depth, true) do
+    {:safe,
+     [
+       "<ul class=\"ml-4\">",
+       render_tree_items(children, expanded, depth + 1),
+       "</ul>"
+     ]}
+  end
+
+  defp tree_children_html(_children, _expanded, _depth, false), do: ""
 
   # ---------------------------------------------------------------------------
   # New components — feedback / states
