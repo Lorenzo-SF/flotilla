@@ -101,10 +101,7 @@ defmodule Flotilla.Renderer do
   # \"clauses with the same name and arity should be grouped together\"
   # warning under --warnings-as-errors.
   defp dispatch_node(%{node: node} = vdom) do
-    cond do
-      renderable?(node) -> render_node(vdom)
-      true -> render_node_v2(vdom)
-    end
+    if renderable?(node), do: render_node(vdom), else: render_node_v2(vdom)
   end
 
   defp renderable?({:col, _, _}), do: true
@@ -928,7 +925,7 @@ defmodule Flotilla.Renderer do
     class = class_with_default(opts, :stepper)
     steps = Keyword.get(opts, :steps, [])
     active = Keyword.get(opts, :active, 0)
-    on_change = Keyword.get(opts, :on_change)
+    _on_change = Keyword.get(opts, :on_change)
 
     rendered =
       steps
