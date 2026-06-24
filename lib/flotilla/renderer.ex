@@ -649,7 +649,6 @@ defmodule Flotilla.Renderer do
     total = Keyword.get(opts, :total_pages, 1)
     on_change = Keyword.get(opts, :on_change)
 
-
     page_btn = fn n ->
       active = if n == current, do: " bg-blue-500 text-white", else: " bg-white"
 
