@@ -155,6 +155,7 @@ defmodule Flotilla.Renderer do
   defp render_node(%{node: {:input, opts, nil}}) do
     class = class_with_default(opts, :input)
     base = [class: class, type: Keyword.get(opts, :type, "text")]
+
     attrs =
       case Keyword.get(opts, :on_change) do
         nil -> base
@@ -189,11 +190,31 @@ defmodule Flotilla.Renderer do
       |> Enum.map(fn
         {label, value} ->
           sel = if value == selected, do: " selected", else: ""
-          {:safe, ["<option value=\"", escape_attr(to_string(value)), "\"", sel, ">", escape_html(label), "</option>"]}
+
+          {:safe,
+           [
+             "<option value=\"",
+             escape_attr(to_string(value)),
+             "\"",
+             sel,
+             ">",
+             escape_html(label),
+             "</option>"
+           ]}
 
         value when is_binary(value) ->
           sel = if value == selected, do: " selected", else: ""
-          {:safe, ["<option value=\"", escape_attr(value), "\"", sel, ">", escape_html(value), "</option>"]}
+
+          {:safe,
+           [
+             "<option value=\"",
+             escape_attr(value),
+             "\"",
+             sel,
+             ">",
+             escape_html(value),
+             "</option>"
+           ]}
       end)
 
     {:safe, ["<select", attrs, ">", rendered_opts, "</select>"]}
@@ -220,6 +241,7 @@ defmodule Flotilla.Renderer do
 
   defp render_node(%{node: {:key_value, opts, pairs}}) do
     class = class_with_default(opts, :key_value)
+
     rows =
       Enum.map(pairs, fn {k, v} ->
         {:safe,
@@ -282,6 +304,7 @@ defmodule Flotilla.Renderer do
     gap = Keyword.get(opts, :gap, "gap-2")
     base = class_with_default(opts, :grid)
     full = "#{base} grid-cols-#{cols} #{gap}" |> String.trim()
+
     {:safe,
      [
        "<div class=\"",
@@ -373,8 +396,15 @@ defmodule Flotilla.Renderer do
   defp render_node(%{node: {:icon, opts, name}}) do
     class = class_with_default(opts, :icon)
     name_str = name |> to_string()
+
     {:safe,
-     ["<i class=\"", class, "\" data-icon=\"", escape_attr(name_str), "\" aria-hidden=\"true\"></i>"]}
+     [
+       "<i class=\"",
+       class,
+       "\" data-icon=\"",
+       escape_attr(name_str),
+       "\" aria-hidden=\"true\"></i>"
+     ]}
   end
 
   # ---------------------------------------------------------------------------
@@ -394,7 +424,8 @@ defmodule Flotilla.Renderer do
         ev -> [{:"phx-submit", to_string(ev)} | attrs]
       end
 
-    {:safe, ["<form", attrs, ">", Enum.map(children_to_list(children), &render_child/1), "</form>"]}
+    {:safe,
+     ["<form", attrs, ">", Enum.map(children_to_list(children), &render_child/1), "</form>"]}
   end
 
   defp render_node(%{node: {:field, opts, child}}) do
@@ -405,17 +436,27 @@ defmodule Flotilla.Renderer do
 
     label_node =
       if label_text,
-        do: {:safe, ["<label class=\"block text-sm font-medium mb-1\">", escape_html(to_string(label_text)), "</label>"]},
+        do:
+          {:safe,
+           [
+             "<label class=\"block text-sm font-medium mb-1\">",
+             escape_html(to_string(label_text)),
+             "</label>"
+           ]},
         else: ""
 
     hint_node =
       if hint,
-        do: {:safe, ["<p class=\"text-xs text-gray-500 mt-1\">", escape_html(to_string(hint)), "</p>"]},
+        do:
+          {:safe,
+           ["<p class=\"text-xs text-gray-500 mt-1\">", escape_html(to_string(hint)), "</p>"]},
         else: ""
 
     error_node =
       if error,
-        do: {:safe, ["<p class=\"text-xs text-red-600 mt-1\">", escape_html(to_string(error)), "</p>"]},
+        do:
+          {:safe,
+           ["<p class=\"text-xs text-red-600 mt-1\">", escape_html(to_string(error)), "</p>"]},
         else: ""
 
     {:safe,
@@ -610,6 +651,7 @@ defmodule Flotilla.Renderer do
 
     page_btn = fn n ->
       active = if n == current, do: " bg-blue-500 text-white", else: " bg-white"
+
       {:safe,
        [
          "<button class=\"px-2 py-1 border rounded",
@@ -644,7 +686,8 @@ defmodule Flotilla.Renderer do
     rendered =
       tabs
       |> Enum.map(fn {key, label} ->
-        active_cls = if key == active, do: " border-b-2 border-blue-500 font-medium", else: " text-gray-600"
+        active_cls =
+          if key == active, do: " border-b-2 border-blue-500 font-medium", else: " text-gray-600"
 
         {:safe,
          [
@@ -776,9 +819,19 @@ defmodule Flotilla.Renderer do
       |> String.upcase()
 
     if src && src != "" do
-      {:safe, ["<img src=\"", escape_attr(src), "\" class=\"", class, "\" alt=\"", escape_attr(name), "\">"]}
+      {:safe,
+       [
+         "<img src=\"",
+         escape_attr(src),
+         "\" class=\"",
+         class,
+         "\" alt=\"",
+         escape_attr(name),
+         "\">"
+       ]}
     else
-      {:safe, ["<div class=\"", class, "\" data-name=\"", escape_attr(name), "\">", initials, "</div>"]}
+      {:safe,
+       ["<div class=\"", class, "\" data-name=\"", escape_attr(name), "\">", initials, "</div>"]}
     end
   end
 
@@ -802,7 +855,7 @@ defmodule Flotilla.Renderer do
       chevron =
         if has_children do
           ~s(<span class="text-gray-400 mr-1">) <>
-            (if is_expanded, do: "\u25BE", else: "\u25B8") <> "</span>"
+            if(is_expanded, do: "\u25BE", else: "\u25B8") <> "</span>"
         else
           "<span class=\"mr-1\"></span>"
         end
@@ -839,6 +892,7 @@ defmodule Flotilla.Renderer do
     class = class_with_default(opts, :progress)
     pct = max(0, min(100, fraction * 100))
     label = Keyword.get(opts, :label)
+
     label_node =
       if label,
         do:
@@ -889,7 +943,16 @@ defmodule Flotilla.Renderer do
         else: ""
 
     full_class = "#{class} #{tone_class}" |> String.trim()
-    {:safe, ["<div class=\"", full_class, "\" role=\"alert\">", title_node, escape_html(message), "</div>"]}
+
+    {:safe,
+     [
+       "<div class=\"",
+       full_class,
+       "\" role=\"alert\">",
+       title_node,
+       escape_html(message),
+       "</div>"
+     ]}
   end
 
   defp render_node(%{node: {:toast, opts, message}}) do
@@ -912,13 +975,28 @@ defmodule Flotilla.Renderer do
     class = class_with_default(opts, :skeleton)
     width = Keyword.get(opts, :width, "100%")
     height = Keyword.get(opts, :height, "1em")
-    {:safe, ["<div class=\"", class, "\" style=\"width: ", escape_attr(to_string(width)), "; height: ", escape_attr(to_string(height)), ";\"></div>"]}
+
+    {:safe,
+     [
+       "<div class=\"",
+       class,
+       "\" style=\"width: ",
+       escape_attr(to_string(width)),
+       "; height: ",
+       escape_attr(to_string(height)),
+       ";\"></div>"
+     ]}
   end
 
   defp render_node(%{node: {:notification, opts, message}}) do
     class = class_with_default(opts, :notification)
     unread = Keyword.get(opts, :unread, false)
-    dot = if unread, do: "<span class=\"inline-block w-2 h-2 bg-blue-500 rounded-full mr-2\"></span>", else: ""
+
+    dot =
+      if unread,
+        do: "<span class=\"inline-block w-2 h-2 bg-blue-500 rounded-full mr-2\"></span>",
+        else: ""
+
     {:safe, ["<div class=\"", class, "\">", {:safe, [dot]}, escape_html(message), "</div>"]}
   end
 
@@ -985,6 +1063,7 @@ defmodule Flotilla.Renderer do
   defp render_node(%{node: {tag, opts, content}}) when is_atom(tag) do
     children = children_to_list(content) |> Enum.map(&render_child/1)
     class = Keyword.get(opts, :class, "")
+
     {:safe,
      [
        "<div class=\"",
@@ -1050,7 +1129,17 @@ defmodule Flotilla.Renderer do
   end
 
   defp html(tag_atom, attrs, children) do
-    {:safe, ["<", Atom.to_string(tag_atom), attrs_to_safe_string(attrs), ">", children, "</", Atom.to_string(tag_atom), ">"]}
+    {:safe,
+     [
+       "<",
+       Atom.to_string(tag_atom),
+       attrs_to_safe_string(attrs),
+       ">",
+       children,
+       "</",
+       Atom.to_string(tag_atom),
+       ">"
+     ]}
   end
 
   defp escape_html(str) when is_binary(str) do

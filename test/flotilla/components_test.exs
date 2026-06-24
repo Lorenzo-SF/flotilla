@@ -64,6 +64,7 @@ defmodule Flotilla.ComponentsTest do
   describe "data" do
     test "table/2 with columns" do
       rows = [%{id: 1, name: "Alice"}, %{id: 2, name: "Bob"}]
+
       assert Components.table(rows, columns: [:id, :name]) ==
                {:table, [columns: [:id, :name]], rows}
     end

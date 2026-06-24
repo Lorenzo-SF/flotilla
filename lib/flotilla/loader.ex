@@ -27,7 +27,7 @@ defmodule Flotilla.Loader do
 
   Mirrors `Arrea.run_sync/2`'s signature.
   """
-  @spec run([ (-> any()) | term() ], keyword()) :: {:ok, [any()]} | {:error, term()}
+  @spec run([(-> any()) | term()], keyword()) :: {:ok, [any()]} | {:error, term()}
   def run(loaders, opts \\ []) when is_list(loaders) do
     if arrea_available?() do
       Arrea.run_sync(loaders, opts)

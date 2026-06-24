@@ -177,11 +177,13 @@ defmodule Flotilla.Components do
 
   @doc "Section grouping (Semantic UI segment)."
   @spec segment([VDOM.t()], keyword()) :: VDOM.t()
-  def segment(children, opts \\ []) when is_list(children), do: VDOM.node(:segment, opts, children)
+  def segment(children, opts \\ []) when is_list(children),
+    do: VDOM.node(:segment, opts, children)
 
   @doc "Fixed-width side panel."
   @spec sidebar([VDOM.t()], keyword()) :: VDOM.t()
-  def sidebar(children, opts \\ []) when is_list(children), do: VDOM.node(:sidebar, opts, children)
+  def sidebar(children, opts \\ []) when is_list(children),
+    do: VDOM.node(:sidebar, opts, children)
 
   # ===========================================================================
   # Text
@@ -221,7 +223,8 @@ defmodule Flotilla.Components do
 
   @doc "Block quote. Pass `:cite` for source URL."
   @spec blockquote(String.t(), keyword()) :: VDOM.t()
-  def blockquote(content, opts \\ []) when is_binary(content), do: VDOM.node(:blockquote, opts, content)
+  def blockquote(content, opts \\ []) when is_binary(content),
+    do: VDOM.node(:blockquote, opts, content)
 
   @doc """
   Link element. `:to` is the href; pass `:msg` to intercept the click
@@ -267,7 +270,8 @@ defmodule Flotilla.Components do
 
   @doc "Multi-line text input."
   @spec textarea(String.t(), keyword()) :: VDOM.t()
-  def textarea(content, opts \\ []) when is_binary(content), do: VDOM.node(:textarea, opts, content)
+  def textarea(content, opts \\ []) when is_binary(content),
+    do: VDOM.node(:textarea, opts, content)
 
   @doc """
   Select element. `options` is a list of strings or `{label, value}` tuples.

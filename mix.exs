@@ -38,7 +38,6 @@ defmodule Flotilla.MixProject do
       # Loaded via Code.ensure_loaded?/2 so the library works without them.
       {:pote, "~> 1.0", optional: true},
       {:arrea, "~> 1.0", optional: true},
-
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, ">= 1.0.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
