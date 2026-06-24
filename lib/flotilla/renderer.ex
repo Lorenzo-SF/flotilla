@@ -649,7 +649,6 @@ defmodule Flotilla.Renderer do
     total = Keyword.get(opts, :total_pages, 1)
     on_change = Keyword.get(opts, :on_change)
 
-    ev = if on_change, do: ~s( phx-change="#{on_change}"), else: ""
 
     page_btn = fn n ->
       active = if n == current, do: " bg-blue-500 text-white", else: " bg-white"
@@ -683,7 +682,6 @@ defmodule Flotilla.Renderer do
     tabs = Keyword.get(opts, :tabs, [])
     active = Keyword.get(opts, :active)
     on_change = Keyword.get(opts, :on_change)
-    ev = if on_change, do: ~s( phx-change="#{on_change}"), else: ""
 
     rendered =
       tabs
@@ -718,7 +716,6 @@ defmodule Flotilla.Renderer do
     steps = Keyword.get(opts, :steps, [])
     active = Keyword.get(opts, :active, 0)
     on_change = Keyword.get(opts, :on_change)
-    ev = if on_change, do: ~s( phx-change="#{on_change}"), else: ""
 
     rendered =
       steps
@@ -1127,7 +1124,7 @@ defmodule Flotilla.Renderer do
       Enum.map(attrs, fn
         {k, true} -> " #{k}=\"true\""
         {k, false} -> " #{k}=\"false\""
-        {k, nil} -> ""
+        {_k, nil} -> ""
         {k, v} -> " #{k}=\"#{escape_attr(to_string(v))}\""
       end)
 
