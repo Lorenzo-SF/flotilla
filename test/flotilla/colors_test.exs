@@ -1,25 +1,15 @@
 defmodule Flotilla.ColorsTest do
-  @moduledoc """
-  Tests for `Flotilla.Colors`. The Pote bridge is optional; tests
-  cover both branches (Pote present and absent).
-  """
   use ExUnit.Case, async: true
 
   alias Flotilla.Colors
 
-  describe "pote_available?/0" do
-    test "returns a boolean" do
-      assert is_boolean(Colors.pote_available?())
-    end
-  end
-
-  describe "to_rgb_css/1 without Pote" do
-    test "passes through hex strings" do
-      assert Colors.to_rgb_css("#FF0000") == "#FF0000"
+  describe "to_rgb_css/1 with Pote available" do
+    test "converts hex strings to rgb(...)" do
+      assert Colors.to_rgb_css("#FF0000") == "rgb(255, 0, 0)"
     end
 
-    test "passes through named colors" do
-      assert Colors.to_rgb_css("tomato") == "tomato"
+    test "converts named colors to rgb(...)" do
+      assert Colors.to_rgb_css("blue") == "rgb(0, 0, 255)"
     end
 
     test "converts non-binary values via to_string" do
@@ -35,10 +25,9 @@ defmodule Flotilla.ColorsTest do
 
     test "extracts color, bg, border, ring, fill" do
       pairs = Colors.style_from_opts(color: "#FF0000", bg: "#00FF00", border: "blue")
-      # CSS named colors (like "blue") pass through verbatim, hex
-      # values get converted to rgb(...) by Pote if loaded.
-      assert Enum.any?(pairs, fn {k, v} -> k == "color" and String.starts_with?(v, "rgb") end)
-      assert {"border-color", "blue"} in pairs
+      assert {"color", "rgb(255, 0, 0)"} in pairs
+      assert {"background-color", "rgb(0, 255, 0)"} in pairs
+      assert {"border-color", "rgb(0, 0, 255)"} in pairs
     end
 
     test "ignores unknown keys" do
@@ -57,14 +46,13 @@ defmodule Flotilla.ColorsTest do
       attr = Colors.style_attr(color: "#FF0000")
       assert String.starts_with?(attr, ~s(style="))
       assert String.ends_with?(attr, ~s("))
-      # Hex colors are normalized to rgb(...) by Pote when available.
       assert attr =~ "color: rgb(255, 0, 0);"
     end
 
     test "joins multiple properties with semicolons" do
       attr = Colors.style_attr(color: "#FF0000", bg: "#00FF00")
-      assert attr =~ "color: #FF0000;"
-      assert attr =~ "background-color: #00FF00;"
+      assert attr =~ "color: rgb(255, 0, 0);"
+      assert attr =~ "background-color: rgb(0, 255, 0);"
     end
   end
 end
