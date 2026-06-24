@@ -97,16 +97,130 @@ boilerplate.
 
 ## Components
 
-| Container | `col`, `row`, `card` |
-|---|---|
-| **Text** | `text`, `heading`, `badge` |
-| **Controls** | `button`, `input`, `select`, `checkbox` |
-| **Data** | `table`, `list`, `key_value` |
-| **States** | `spinner`, `empty`, `error` |
+Flotilla ships **47+ ready-to-use components** organised by purpose.
+Every helper returns a 3-tuple VDOM node that `Flotilla.Renderer`
+turns into HEEx. All helpers accept an `opts` keyword list; pass
+`:class` to override the default Tailwind classes, `:msg` to wire
+`phx-click`, `:on_change` to wire `phx-change`, etc.
 
-All helpers accept an `opts` keyword list; pass `:class` to override
-the default Tailwind classes, `:msg` to wire `phx-click`, `:on_change`
-to wire `phx-change`, etc.
+### Containers
+
+| Helper | Notes |
+|---|---|
+| `col(children, opts \\ [])` | flex column |
+| `row(children, opts \\ [])` | flex row |
+| `card(children, opts \\ [])` | bordered with padding |
+| `divider(opts \\ [])` | horizontal rule; pass `:label` for labelled divider |
+| `grid(children, opts \\ [])` | CSS grid (`:cols:`, `:gap:`) |
+| `stack(children, opts \\ [])` | vertical stack with consistent gap |
+| `center(child, opts \\ [])` | centred single child |
+| `segment(children, opts \\ [])` | Semantic UI style section |
+| `sidebar(children, opts \\ [])` | fixed-width side panel |
+
+### Text
+
+| Helper | Notes |
+|---|---|
+| `text(content, opts \\ [])` | plain text |
+| `heading(content, opts \\ [])` | `:level` 1..6 |
+| `badge(content, opts \\ [])` | `:tone` (`:success` / `:warning` / `:error` / `:info` / `:neutral`) |
+| `label(content, opts \\ [])` | form label |
+| `code(content, opts \\ [])` | inline `<code>` |
+| `pre(content, opts \\ [])` | multi-line block |
+| `kbd(content, opts \\ [])` | keyboard key |
+| `blockquote(content, opts \\ [])` | `:cite` for source |
+| `link(label, opts \\ [])` | `:to`, `:msg` |
+| `icon(name, opts \\ [])` | `:name` atom (`:check`, `:arrow_right`, ...) |
+
+### Forms
+
+| Helper | Notes |
+|---|---|
+| `form(children, opts \\ [])` | `:on_submit`, `:method`, `:action` |
+| `field(child, opts \\ [])` | `:label`, `:hint`, `:error` |
+| `input(opts \\ [])` | `:placeholder`, `:value`, `:on_change`, `:type` |
+| `textarea(content, opts \\ [])` | multi-line input |
+| `select(options, opts \\ [])` | strings or `{label, value}` tuples |
+| `checkbox(opts \\ [])` | `:checked`, `:on_change` |
+| `radio_group(options, opts \\ [])` | `:value`, `:on_change` |
+| `switch(opts \\ [])` | toggle on/off |
+| `slider(opts \\ [])` | `:min`, `:max`, `:value`, `:step` |
+| `datepicker(opts \\ [])` | `:value` (`Date.t()`), `:on_change` |
+| `submit(label, opts \\ [])` | submits the enclosing form |
+
+### Navigation
+
+| Helper | Notes |
+|---|---|
+| `menu(children, opts \\ [])` | horizontal/vertical (`:orientation`) |
+| `breadcrumb(items, opts \\ [])` | trail of links |
+| `pagination(opts \\ [])` | `:current_page`, `:total_pages`, `:on_change` |
+| `tabs(opts \\ [])` | `:tabs` (kw list), `:active`, `:on_change` |
+| `navbar(children, opts \\ [])` | top navigation bar |
+| `stepper(opts \\ [])` | `:steps` (list), `:active`, `:on_change` |
+
+### Data display
+
+| Helper | Notes |
+|---|---|
+| `table(rows, opts \\ [])` | `:columns`; pass `:loader` + `:parallel` for async |
+| `list(items, opts \\ [])` | `:item` function; `:loader` + `:parallel` for async |
+| `key_value(pairs, opts \\ [])` | two-column key-value |
+| `stat(label, value, opts \\ [])` | `:trend` (`:up`/`:down`/`:flat`) |
+| `timeline(events, opts \\ [])` | list of maps with `:date` / `:event` |
+| `avatar(src_or_name, opts \\ [])` | URL or initials |
+| `tree(items, opts \\ [])` | recursive tree; `:expanded` keys |
+
+### Feedback / states
+
+| Helper | Notes |
+|---|---|
+| `spinner(opts \\ [])` | loading spinner |
+| `empty(message, opts \\ [])` | empty-state placeholder |
+| `error(message, opts \\ [])` | error-state placeholder |
+| `progress(fraction, opts \\ [])` | 0.0..1.0; `:label` |
+| `alert(message, opts \\ [])` | `:tone`, `:title` |
+| `toast(message, opts \\ [])` | transient notification |
+| `skeleton(opts \\ [])` | `:width`, `:height` |
+| `notification(message, opts \\ [])` | longer-lived notification; `:unread` |
+
+## Colours (optional Pote bridge)
+
+If your app uses `Pote`, every component opts can carry color keys
+that get parsed at render time and turned into inline `style`:
+
+```elixir
+col([
+  text("Primary",  color: "theme:primary"),
+  text("Background", bg: "#FFB400"),
+  text("Border",   border: "blue"),
+  text("Ring",     ring: "theme:error")
+])
+```
+
+Supported keys: `:color`, `:bg`, `:border`, `:ring`, `:fill`.
+Supported formats: hex (`#FF0000`), named CSS (`tomato`),
+RGB tuples, HSL / HSV strings (`hsl:0,100,50`), and theme keys
+(`theme:primary`).
+
+The bridge is implemented in `Flotilla.Colors` and is loaded
+via `Code.ensure_loaded?(Pote)` so it's safe to depend on
+or not. See `lib/flotilla/colors.ex` for details.
+
+## Parallel loading (optional Arrea bridge)
+
+`table/2` and `list/2` accept a `:loader` option that produces a
+vdom for each row. Set `:parallel: true` to fan out via
+`Flotilla.Loader`, which uses `Arrea.run_sync/2` when available
+and falls back to sequential execution otherwise:
+
+```elixir
+table([1, 2, 3, 4, 5],
+  columns: [:n, :square],
+  loader: fn n -> %{n: n, square: n * n} end,
+  parallel: true
+)
+```
 
 ## Why not just write HEEx?
 

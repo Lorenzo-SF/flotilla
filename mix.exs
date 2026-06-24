@@ -33,6 +33,12 @@ defmodule Flotilla.MixProject do
       # Phoenix LiveView is OPTIONAL - only required if you actually use Flotilla
       # to render a LiveView. Library consumers can add it explicitly.
       {:phoenix_live_view, "~> 1.0", optional: true, only: :test},
+
+      # Optional integrations used by Flotilla.Colors / Flotilla.Loader.
+      # Loaded via Code.ensure_loaded?/2 so the library works without them.
+      {:pote, "~> 1.0", optional: true},
+      {:arrea, "~> 1.0", optional: true},
+
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, ">= 1.0.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
@@ -41,7 +47,7 @@ defmodule Flotilla.MixProject do
 
   defp package do
     [
-      files: ["lib", "mix.exs", "README.md", "README_ES.md", "LICENSE.md"],
+      files: ["lib", "mix.exs", "README.md", "docs/README.es.md", "LICENSE.md"],
       maintainers: ["Lorenzo Sánchez"],
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url}

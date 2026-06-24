@@ -13,35 +13,76 @@ defmodule Flotilla.VDOM do
 
     * `tag` — atom identifying the node kind (`:col`, `:row`, `:button`,
       `:text`, etc.)
-    * `opts` — keyword list of options (`:msg`, `:class`, `:id`, `:on_change`, ...)
+    * `opts` — keyword list of options (`:msg`, `:class`, `:id`, `:on_change`,
+      `:color`, `:bg`, `:border`, `:level`, `:tone`, `:loader`, ...)
     * `content` — children (a list of vdom nodes), a string, or `nil`
 
   ## Supported tags
 
-    Containers: `:col`, `:row`, `:card`
-    Text:       `:text`, `:heading`, `:badge`
-    Controls:   `:button`, `:input`, `:select`, `:checkbox`
-    Data:       `:table`, `:list`, `:key_value`
-    States:     `:spinner`, `:empty`, `:error`
+  Containers:  :col, :row, :card, :divider, :grid, :stack, :center,
+               :segment, :sidebar
+  Text:        :text, :heading, :badge, :label, :code, :pre, :kbd,
+               :blockquote, :link, :icon
+  Forms:       :form, :field, :input, :textarea, :select, :checkbox,
+               :radio_group, :switch, :slider, :datepicker, :submit
+  Navigation:  :menu, :breadcrumb, :pagination, :tabs, :navbar, :stepper
+  Data:        :table, :list, :key_value, :stat, :timeline, :avatar, :tree
+  States:      :spinner, :empty, :error, :progress, :alert, :toast,
+               :skeleton, :notification
   """
 
   @type tag ::
           :col
           | :row
           | :card
+          | :divider
+          | :grid
+          | :stack
+          | :center
+          | :segment
+          | :sidebar
           | :text
           | :heading
           | :badge
-          | :button
+          | :label
+          | :code
+          | :pre
+          | :kbd
+          | :blockquote
+          | :link
+          | :icon
+          | :form
+          | :field
           | :input
+          | :textarea
           | :select
           | :checkbox
+          | :radio_group
+          | :switch
+          | :slider
+          | :datepicker
+          | :submit
+          | :menu
+          | :breadcrumb
+          | :pagination
+          | :tabs
+          | :navbar
+          | :stepper
           | :table
           | :list
           | :key_value
+          | :stat
+          | :timeline
+          | :avatar
+          | :tree
           | :spinner
           | :empty
           | :error
+          | :progress
+          | :alert
+          | :toast
+          | :skeleton
+          | :notification
           | atom()
 
   @type opts :: keyword()
