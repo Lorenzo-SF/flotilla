@@ -51,10 +51,10 @@ defmodule Flotilla.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md", "docs/README.es.md", "LICENSE.md", "CHANGELOG.md"] 
-    ]
+      extras: ["README.md", "docs/README.es.md", "LICENSE.md", "CHANGELOG.md"],
       source_url: "https://github.com/Lorenzo-SF/flotilla",
       homepage_url: "https://github.com/Lorenzo-SF/flotilla",
-      source_ref: "v0.1.0",
+      source_ref: "v0.1.0"
+    ]
   end
 end
