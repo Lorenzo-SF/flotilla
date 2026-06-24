@@ -12,6 +12,7 @@ defmodule Flotilla.Renderer do
 
   alias Flotilla.VDOM
   alias Phoenix.LiveView.LiveStruct
+  alias Phoenix.LiveView.TagEngine
 
   # Default Tailwind-style classes applied when `class:` is not given.
   @default_class_by_tag %{
@@ -88,7 +89,7 @@ defmodule Flotilla.Renderer do
   def to_heex(vdom) do
     env = __ENV__
 
-    Phoenix.LiveView.TagEngine.component(
+    TagEngine.component(
       &render_node/1,
       %{node: vdom},
       {env.module, env.function, env.file, env.line}
