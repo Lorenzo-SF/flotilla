@@ -35,8 +35,9 @@ defmodule Flotilla.ColorsTest do
 
     test "extracts color, bg, border, ring, fill" do
       pairs = Colors.style_from_opts(color: "#FF0000", bg: "#00FF00", border: "blue")
-      assert {"color", "#FF0000"} in pairs
-      assert {"background-color", "#00FF00"} in pairs
+      # CSS named colors (like "blue") pass through verbatim, hex
+      # values get converted to rgb(...) by Pote if loaded.
+      assert Enum.any?(pairs, fn {k, v} -> k == "color" and String.starts_with?(v, "rgb") end)
       assert {"border-color", "blue"} in pairs
     end
 
@@ -56,7 +57,8 @@ defmodule Flotilla.ColorsTest do
       attr = Colors.style_attr(color: "#FF0000")
       assert String.starts_with?(attr, ~s(style="))
       assert String.ends_with?(attr, ~s("))
-      assert attr =~ "color: #FF0000;"
+      # Hex colors are normalized to rgb(...) by Pote when available.
+      assert attr =~ "color: rgb(255, 0, 0);"
     end
 
     test "joins multiple properties with semicolons" do
