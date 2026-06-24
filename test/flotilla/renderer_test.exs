@@ -177,7 +177,7 @@ defmodule Flotilla.RendererTest do
     iodata = Renderer.to_heex(vdom)
 
     case iodata do
-      %Phoenix.LiveView.LiveStruct{} ->
+      %{__struct__: Phoenix.LiveView.LiveStruct} ->
         # LiveStruct is a private record — we use IO.iodata_to_binary on
         # its inner field. The simpler path: read the :static attribute.
         iodata
