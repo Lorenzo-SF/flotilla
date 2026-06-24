@@ -156,7 +156,7 @@ defmodule Flotilla.ComponentsTest do
         {tag, opts, content} = vdom
         assert is_atom(tag)
         assert is_list(opts)
-        assert content != nil or is_list(content)
+        assert content != nil
       end
     end
   end

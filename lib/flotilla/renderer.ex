@@ -84,15 +84,9 @@ defmodule Flotilla.Renderer do
   `Phoenix.LiveView.TagEngine.component/3`). The user's `render/1`
   callback is expected to return this directly.
   """
-  @spec to_heex(VDOM.t()) :: LiveStruct.t()
+  @spec to_heex(VDOM.t()) :: {:safe, [...]}
   def to_heex(vdom) do
-    env = __ENV__
-
-    TagEngine.component(
-      &dispatch_node/1,
-      %{node: vdom},
-      {env.module, env.function, env.file, env.line}
-    )
+    dispatch_node(%{node: vdom})
   end
 
   # Single entry point that fans out to the two render_node*/1 clause groups.
@@ -394,15 +388,11 @@ defmodule Flotilla.Renderer do
 
   # Builds an attribute list, keeping only the keys in `allowed` from opts
   # and merging with the defaults.
-  defp build_attrs(default_attrs, opts, allowed) do
+  defp build_attrs(_default_attrs, opts, allowed) do
     attrs_from_opts =
-      Enum.reduce(opts, default_attrs, fn {k, v}, acc ->
-        if k in allowed do
-          [{k, v} | acc]
-        else
-          acc
-        end
-      end)
+      opts
+      |> Enum.filter(fn {k, _v} -> k in allowed end)
+      |> Enum.reject(fn {_k, v} -> is_nil(v) end)
 
     case attrs_from_opts do
       [] -> []
