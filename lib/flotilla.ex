@@ -30,7 +30,7 @@ defmodule Flotilla do
           col([
             row([
               button("−", msg: :decrement),
-              text("#{model.count}"),
+              text("\#{model.count}"),
               button("+", msg: :increment)
             ]),
             if model.loading do
