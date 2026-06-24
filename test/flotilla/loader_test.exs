@@ -25,9 +25,11 @@ defmodule Flotilla.LoaderTest do
     end
   end
 
-  describe "run/2 without Arrea" do
-    test "returns an error tuple" do
-      assert {:error, :arrea_not_available} = Loader.run([fn -> 1 end])
+  describe "run/2 with Arrea available" do
+    test "delegates to Arrea.run_sync/2" do
+      # When arrea is loaded, Loader.run delegates to it.
+      assert [{:ok, %{result: 1, exit_code: 0}}] =
+               Loader.run([fn -> 1 end])
     end
   end
 end
