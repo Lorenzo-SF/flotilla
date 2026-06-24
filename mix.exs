@@ -36,7 +36,7 @@ defmodule Flotilla.MixProject do
 
       # Optional integrations used by Flotilla.Colors / Flotilla.Loader.
       # Loaded via Code.ensure_loaded?/2 so the library works without them.
-      {:pote, "~> 1.0", optional: true},
+      {:pote, github: "Lorenzo-SF/pote", tag: "v0.2.0", optional: true},
       {:arrea, github: "Lorenzo-SF/arrea", tag: "v0.2.0", optional: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, ">= 1.0.0", only: [:dev, :test], runtime: false},
