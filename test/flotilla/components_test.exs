@@ -156,7 +156,9 @@ defmodule Flotilla.ComponentsTest do
         {tag, opts, content} = vdom
         assert is_atom(tag)
         assert is_list(opts)
-        assert content != nil
+        # content may be nil for self-closing tags like :spinner, :skeleton
+        assert is_nil(content) or is_list(content) or is_binary(content) or is_map(content) or
+                 is_integer(content) or is_float(content)
       end
     end
   end

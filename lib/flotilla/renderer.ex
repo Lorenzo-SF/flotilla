@@ -388,15 +388,17 @@ defmodule Flotilla.Renderer do
 
   # Builds an attribute list, keeping only the keys in `allowed` from opts
   # and merging with the defaults.
-  defp build_attrs(_default_attrs, opts, allowed) do
-    attrs_from_opts =
-      opts
-      |> Enum.filter(fn {k, _v} -> k in allowed end)
-      |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+  defp build_attrs(default_attrs, opts, allowed) do
+    # Merge defaults with allowed opts, opts wins. Drop nils.
+    merged =
+      default_attrs
+      |> Keyword.merge(opts)
+      |> Keyword.take(allowed)
+      |> Keyword.reject(fn {_k, v} -> is_nil(v) end)
 
-    case attrs_from_opts do
+    case merged do
       [] -> []
-      _ -> attrs_to_safe_string(attrs_from_opts)
+      _ -> attrs_to_safe_string(merged)
     end
   end
 
@@ -412,7 +414,7 @@ defmodule Flotilla.Renderer do
         {k, v} -> " #{k}=\"#{escape_attr(to_string(v))}\""
       end)
 
-    {:safe, Enum.join(pieces, "")}
+    [{:safe, Enum.join(pieces, "")}]
   end
 
   defp html(tag_atom, attrs, children) do
