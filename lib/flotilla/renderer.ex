@@ -7,12 +7,11 @@ defmodule Flotilla.Renderer do
   it up. Direct calls are useful for tests:
 
       iex> vdom = Flotilla.Components.text("hi")
-      iex> %{struct: Phoenix.LiveView.LiveStruct} = Flotilla.Renderer.to_heex(vdom)
+      iex> result = Flotilla.Renderer.to_heex(vdom)
   """
 
   alias Flotilla.VDOM
-  alias Phoenix.LiveView.LiveStruct
-  alias Phoenix.LiveView.TagEngine
+  alias Phoenix.LiveView.{LiveStruct, TagEngine}
 
   # Default Tailwind-style classes applied when `class:` is not given.
   @default_class_by_tag %{
