@@ -262,6 +262,12 @@ defmodule Flotilla.Components do
   def field(child, opts \\ []) when is_tuple(child), do: VDOM.node(:field, opts, child)
 
   @doc """
+  Button. `:msg` is rendered as a `phx-click` event handler.
+  """
+  @spec button(String.t(), keyword()) :: VDOM.t()
+  def button(label, opts \\ []) when is_binary(label), do: VDOM.node(:button, opts, label)
+
+  @doc """
   Text input. Supports `:placeholder`, `:value`, `:on_change`, `:name`,
   `:id`, `:class`, `:type` (defaults to `"text"`).
   """
