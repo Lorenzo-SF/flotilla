@@ -306,6 +306,199 @@ defmodule Flotilla.Renderer do
   # New components — containers
   # ---------------------------------------------------------------------------
 
+  # ---------------------------------------------------------------------------
+  # New components — text
+  # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # New components — forms
+  # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # New components — navigation
+  # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # New components — data display
+  # ---------------------------------------------------------------------------
+
+  defp render_tree_items(items, expanded, depth) do
+    Enum.map(items, fn item ->
+      key = Map.get(item, :key)
+      label = Map.get(item, :label, "")
+      children = Map.get(item, :children, [])
+      is_expanded = key in expanded
+
+      chevron = tree_chevron(children != [], is_expanded)
+      children_html = tree_children_html(children, expanded, depth, is_expanded)
+
+      {:safe,
+       [
+         "<li><div class=\"flex items-center py-0.5\">",
+         chevron,
+         escape_html(to_string(label)),
+         "</div>",
+         children_html,
+         "</li>"
+       ]}
+    end)
+  end
+
+  defp tree_chevron(false, _is_expanded),
+    do: "<span class=\"mr-1\"></span>"
+
+  defp tree_chevron(true, true),
+    do: ~s(<span class="text-gray-400 mr-1">\u25BE</span>)
+
+  defp tree_chevron(true, false),
+    do: ~s(<span class="text-gray-400 mr-1">\u25B8</span>)
+
+  defp tree_children_html([], _expanded, _depth, _is_expanded), do: ""
+
+  defp tree_children_html(children, expanded, depth, true) do
+    {:safe,
+     [
+       "<ul class=\"ml-4\">",
+       render_tree_items(children, expanded, depth + 1),
+       "</ul>"
+     ]}
+  end
+
+  defp tree_children_html(_children, _expanded, _depth, false), do: ""
+
+  # ---------------------------------------------------------------------------
+  # New components — feedback / states
+  # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # Loader-aware data components — delegate to Flotilla.Loader when present
+  # ---------------------------------------------------------------------------
+
+  # Unknown tag — best-effort fallback. Renders as a div with the tag's atom
+  # in data-tag so the user can debug without losing content.
+
+  # ---------------------------------------------------------------------------
+  # Helpers
+  # ---------------------------------------------------------------------------
+
+  defp render_child(child) when is_binary(child), do: escape_html(child)
+  defp render_child({_tag, _opts, _content} = vdom), do: render_node(%{node: vdom})
+  defp render_child(nil), do: ""
+
+  defp children_to_list(children) when is_list(children), do: children
+  defp children_to_list(nil), do: []
+  defp children_to_list(child), do: [child]
+
+  defp class_with_default(opts, tag) do
+    case Keyword.get(opts, :class) do
+      nil -> Map.get(@default_class_by_tag, tag, "")
+      custom -> custom
+    end
+  end
+
+  # Builds an attribute list, keeping only the keys in `allowed` from opts
+  # and merging with the defaults.
+  defp build_attrs(default_attrs, opts, allowed) do
+    attrs_from_opts =
+      Enum.reduce(opts, default_attrs, fn {k, v}, acc ->
+        if k in allowed do
+          [{k, v} | acc]
+        else
+          acc
+        end
+      end)
+
+    case attrs_from_opts do
+      [] -> []
+      _ -> attrs_to_safe_string(attrs_from_opts)
+    end
+  end
+
+  # Build " key=\"value\" key2=\"value2\"" from a keyword list.
+  # We render manually because each Phoenix.LiveView callback expects an
+  # iodata; for these tests we keep things simple and use {:safe, ...}.
+  defp attrs_to_safe_string(attrs) do
+    pieces =
+      Enum.map(attrs, fn
+        {k, true} -> " #{k}=\"true\""
+        {k, false} -> " #{k}=\"false\""
+        {_k, nil} -> ""
+        {k, v} -> " #{k}=\"#{escape_attr(to_string(v))}\""
+      end)
+
+    {:safe, Enum.join(pieces, "")}
+  end
+
+  defp html(tag_atom, attrs, children) do
+    {:safe,
+     [
+       "<",
+       Atom.to_string(tag_atom),
+       attrs_to_safe_string(attrs),
+       ">",
+       children,
+       "</",
+       Atom.to_string(tag_atom),
+       ">"
+     ]}
+  end
+
+  defp escape_html(str) when is_binary(str) do
+    str
+    |> String.replace("&", "&amp;")
+    |> String.replace("<", "&lt;")
+    |> String.replace(">", "&gt;")
+  end
+
+  defp escape_html(other), do: escape_html(to_string(other))
+
+  defp escape_attr(str) when is_binary(str) do
+    str
+    |> String.replace("&", "&amp;")
+    |> String.replace("\"", "&quot;")
+    |> String.replace("<", "&lt;")
+  end
+
+  defp escape_attr(other), do: escape_attr(to_string(other))
+
+  defp clamp_level(n) when is_integer(n) and n >= 1 and n <= 6, do: n
+  defp clamp_level(_), do: 2
+
+  defp render_table_headers(columns) do
+    Enum.map(columns, fn
+      col when is_atom(col) ->
+        {:safe, ["<th>", escape_html(Atom.to_string(col)), "</th>"]}
+
+      col when is_binary(col) ->
+        {:safe, ["<th>", escape_html(col), "</th>"]}
+    end)
+  end
+
+  defp render_table_rows(rows, columns) do
+    Enum.map(rows, fn row ->
+      cells = Enum.map(columns, fn col -> cell_html(cell_value(row, col)) end)
+      {:safe, ["<tr>", cells, "</tr>"]}
+    end)
+  end
+
+  defp cell_value(row, col) when is_map(row) and is_atom(col), do: Map.get(row, col, "")
+  defp cell_value(row, col) when is_map(row) and is_binary(col), do: Map.get(row, col, "")
+
+  defp cell_value(row, col) when is_list(row) and is_integer(col),
+    do: row |> Enum.at(col, "") |> to_string()
+
+  defp cell_value(_row, _col), do: ""
+
+  defp cell_html(value) do
+    {:safe, ["<td>", escape_html(to_string(value)), "</td>"]}
+  end
+
+  defp rendered_item(nil, item), do: escape_html(to_string(item))
+  defp rendered_item(fun, item) when is_function(fun, 1), do: render_node(%{node: fun.(item)})
+
+  # All render_node_v2/1 clauses grouped together (silences
+  # the "clauses should be grouped" warning under --warnings-as-errors).
+
   defp render_node_v2(%{node: {:divider, opts, nil}}) do
     class = class_with_default(opts, :divider)
     orientation = Keyword.get(opts, :orientation, :horizontal)
@@ -363,10 +556,6 @@ defmodule Flotilla.Renderer do
     class = class_with_default(opts, :sidebar)
     html(:aside, [class: class], Enum.map(children_to_list(children), &render_child/1))
   end
-
-  # ---------------------------------------------------------------------------
-  # New components — text
-  # ---------------------------------------------------------------------------
 
   defp render_node_v2(%{node: {:label, opts, content}}) do
     class = class_with_default(opts, :label)
@@ -435,10 +624,6 @@ defmodule Flotilla.Renderer do
        "\" aria-hidden=\"true\"></i>"
      ]}
   end
-
-  # ---------------------------------------------------------------------------
-  # New components — forms
-  # ---------------------------------------------------------------------------
 
   defp render_node_v2(%{node: {:form, opts, children}}) do
     class = class_with_default(opts, :form)
@@ -637,10 +822,6 @@ defmodule Flotilla.Renderer do
     {:safe, ["<button type=\"submit\"", attrs, ">", escape_html(label), "</button>"]}
   end
 
-  # ---------------------------------------------------------------------------
-  # New components — navigation
-  # ---------------------------------------------------------------------------
-
   defp render_node_v2(%{node: {:menu, opts, children}}) do
     class = class_with_default(opts, :menu)
     orientation = Keyword.get(opts, :orientation, :horizontal)
@@ -784,10 +965,6 @@ defmodule Flotilla.Renderer do
     {:safe, ["<div class=\"", class, "\">", rendered, "</div>"]}
   end
 
-  # ---------------------------------------------------------------------------
-  # New components — data display
-  # ---------------------------------------------------------------------------
-
   defp render_node_v2(%{node: {:stat, opts, %{label: label, value: value}}}) do
     class = class_with_default(opts, :stat)
     trend = Keyword.get(opts, :trend)
@@ -874,54 +1051,6 @@ defmodule Flotilla.Renderer do
 
     {:safe, ["<ul class=\"", class, "\">", rendered, "</ul>"]}
   end
-
-  defp render_tree_items(items, expanded, depth) do
-    Enum.map(items, fn item ->
-      key = Map.get(item, :key)
-      label = Map.get(item, :label, "")
-      children = Map.get(item, :children, [])
-      is_expanded = key in expanded
-
-      chevron = tree_chevron(children != [], is_expanded)
-      children_html = tree_children_html(children, expanded, depth, is_expanded)
-
-      {:safe,
-       [
-         "<li><div class=\"flex items-center py-0.5\">",
-         chevron,
-         escape_html(to_string(label)),
-         "</div>",
-         children_html,
-         "</li>"
-       ]}
-    end)
-  end
-
-  defp tree_chevron(false, _is_expanded),
-    do: "<span class=\"mr-1\"></span>"
-
-  defp tree_chevron(true, true),
-    do: ~s(<span class="text-gray-400 mr-1">\u25BE</span>)
-
-  defp tree_chevron(true, false),
-    do: ~s(<span class="text-gray-400 mr-1">\u25B8</span>)
-
-  defp tree_children_html([], _expanded, _depth, _is_expanded), do: ""
-
-  defp tree_children_html(children, expanded, depth, true) do
-    {:safe,
-     [
-       "<ul class=\"ml-4\">",
-       render_tree_items(children, expanded, depth + 1),
-       "</ul>"
-     ]}
-  end
-
-  defp tree_children_html(_children, _expanded, _depth, false), do: ""
-
-  # ---------------------------------------------------------------------------
-  # New components — feedback / states
-  # ---------------------------------------------------------------------------
 
   defp render_node_v2(%{node: {:progress, opts, fraction}}) do
     class = class_with_default(opts, :progress)
@@ -1035,10 +1164,6 @@ defmodule Flotilla.Renderer do
     {:safe, ["<div class=\"", class, "\">", {:safe, [dot]}, escape_html(message), "</div>"]}
   end
 
-  # ---------------------------------------------------------------------------
-  # Loader-aware data components — delegate to Flotilla.Loader when present
-  # ---------------------------------------------------------------------------
-
   defp render_node_v2(%{node: {:table, opts, rows}}) do
     class = class_with_default(opts, :table)
     columns = Keyword.get(opts, :columns, [])
@@ -1093,8 +1218,6 @@ defmodule Flotilla.Renderer do
     {:safe, ["<ul class=\"", class, "\">", rendered, "</ul>"]}
   end
 
-  # Unknown tag — best-effort fallback. Renders as a div with the tag's atom
-  # in data-tag so the user can debug without losing content.
   defp render_node_v2(%{node: {tag, opts, content}}) when is_atom(tag) do
     children = children_to_list(content) |> Enum.map(&render_child/1)
     class = Keyword.get(opts, :class, "")
@@ -1110,123 +1233,4 @@ defmodule Flotilla.Renderer do
        "</div>"
      ]}
   end
-
-  # ---------------------------------------------------------------------------
-  # Helpers
-  # ---------------------------------------------------------------------------
-
-  defp render_child(child) when is_binary(child), do: escape_html(child)
-  defp render_child({_tag, _opts, _content} = vdom), do: render_node(%{node: vdom})
-  defp render_child(nil), do: ""
-
-  defp children_to_list(children) when is_list(children), do: children
-  defp children_to_list(nil), do: []
-  defp children_to_list(child), do: [child]
-
-  defp class_with_default(opts, tag) do
-    case Keyword.get(opts, :class) do
-      nil -> Map.get(@default_class_by_tag, tag, "")
-      custom -> custom
-    end
-  end
-
-  # Builds an attribute list, keeping only the keys in `allowed` from opts
-  # and merging with the defaults.
-  defp build_attrs(default_attrs, opts, allowed) do
-    attrs_from_opts =
-      Enum.reduce(opts, default_attrs, fn {k, v}, acc ->
-        if k in allowed do
-          [{k, v} | acc]
-        else
-          acc
-        end
-      end)
-
-    case attrs_from_opts do
-      [] -> []
-      _ -> attrs_to_safe_string(attrs_from_opts)
-    end
-  end
-
-  # Build " key=\"value\" key2=\"value2\"" from a keyword list.
-  # We render manually because each Phoenix.LiveView callback expects an
-  # iodata; for these tests we keep things simple and use {:safe, ...}.
-  defp attrs_to_safe_string(attrs) do
-    pieces =
-      Enum.map(attrs, fn
-        {k, true} -> " #{k}=\"true\""
-        {k, false} -> " #{k}=\"false\""
-        {_k, nil} -> ""
-        {k, v} -> " #{k}=\"#{escape_attr(to_string(v))}\""
-      end)
-
-    {:safe, Enum.join(pieces, "")}
-  end
-
-  defp html(tag_atom, attrs, children) do
-    {:safe,
-     [
-       "<",
-       Atom.to_string(tag_atom),
-       attrs_to_safe_string(attrs),
-       ">",
-       children,
-       "</",
-       Atom.to_string(tag_atom),
-       ">"
-     ]}
-  end
-
-  defp escape_html(str) when is_binary(str) do
-    str
-    |> String.replace("&", "&amp;")
-    |> String.replace("<", "&lt;")
-    |> String.replace(">", "&gt;")
-  end
-
-  defp escape_html(other), do: escape_html(to_string(other))
-
-  defp escape_attr(str) when is_binary(str) do
-    str
-    |> String.replace("&", "&amp;")
-    |> String.replace("\"", "&quot;")
-    |> String.replace("<", "&lt;")
-  end
-
-  defp escape_attr(other), do: escape_attr(to_string(other))
-
-  defp clamp_level(n) when is_integer(n) and n >= 1 and n <= 6, do: n
-  defp clamp_level(_), do: 2
-
-  defp render_table_headers(columns) do
-    Enum.map(columns, fn
-      col when is_atom(col) ->
-        {:safe, ["<th>", escape_html(Atom.to_string(col)), "</th>"]}
-
-      col when is_binary(col) ->
-        {:safe, ["<th>", escape_html(col), "</th>"]}
-    end)
-  end
-
-  defp render_table_rows(rows, columns) do
-    Enum.map(rows, fn row ->
-      cells = Enum.map(columns, fn col -> cell_html(cell_value(row, col)) end)
-      {:safe, ["<tr>", cells, "</tr>"]}
-    end)
-  end
-
-  defp cell_value(row, col) when is_map(row) and is_atom(col), do: Map.get(row, col, "")
-  defp cell_value(row, col) when is_map(row) and is_binary(col), do: Map.get(row, col, "")
-
-  defp cell_value(row, col) when is_list(row) and is_integer(col),
-    do: row |> Enum.at(col, "") |> to_string()
-
-  defp cell_value(_row, _col), do: ""
-
-  defp cell_html(value) do
-    {:safe, ["<td>", escape_html(to_string(value)), "</td>"]}
-  end
-
-  defp rendered_item(nil, item), do: escape_html(to_string(item))
-  defp rendered_item(fun, item) when is_function(fun, 1), do: render_node(%{node: fun.(item)})
 end
