@@ -90,11 +90,38 @@ defmodule Flotilla.Renderer do
     env = __ENV__
 
     TagEngine.component(
-      &render_node/1,
+      &dispatch_node/1,
       %{node: vdom},
       {env.module, env.function, env.file, env.line}
     )
   end
+
+  # Single entry point that fans out to the two render_node*/1 clause groups.
+  # We keep them separate to silence the
+  # \"clauses with the same name and arity should be grouped together\"
+  # warning under --warnings-as-errors.
+  defp dispatch_node(%{node: node} = vdom) do
+    cond do
+      renderable?(node) -> render_node(vdom)
+      true -> render_node_v2(vdom)
+    end
+  end
+
+  defp renderable?({:col, _, _}), do: true
+  defp renderable?({:row, _, _}), do: true
+  defp renderable?({:card, _, _}), do: true
+  defp renderable?({:text, _, _}), do: true
+  defp renderable?({:heading, _, _}), do: true
+  defp renderable?({:badge, _, _}), do: true
+  defp renderable?({:button, _, _}), do: true
+  defp renderable?({:input, _, _}), do: true
+  defp renderable?({:select, _, _}), do: true
+  defp renderable?({:checkbox, _, _}), do: true
+  defp renderable?({:key_value, _, _}), do: true
+  defp renderable?({:spinner, _, _}), do: true
+  defp renderable?({:empty, _, _}), do: true
+  defp renderable?({:error, _, _}), do: true
+  defp renderable?(_), do: false
 
   # ---------------------------------------------------------------------------
   # Renderer — one clause per VDOM tag
@@ -279,7 +306,7 @@ defmodule Flotilla.Renderer do
   # New components — containers
   # ---------------------------------------------------------------------------
 
-  defp render_node(%{node: {:divider, opts, nil}}) do
+  defp render_node_v2(%{node: {:divider, opts, nil}}) do
     class = class_with_default(opts, :divider)
     orientation = Keyword.get(opts, :orientation, :horizontal)
     label = Keyword.get(opts, :label)
@@ -301,7 +328,7 @@ defmodule Flotilla.Renderer do
     end
   end
 
-  defp render_node(%{node: {:grid, opts, children}}) do
+  defp render_node_v2(%{node: {:grid, opts, children}}) do
     cols = Keyword.get(opts, :cols, 3)
     gap = Keyword.get(opts, :gap, "gap-2")
     base = class_with_default(opts, :grid)
@@ -317,22 +344,22 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:stack, opts, children}}) do
+  defp render_node_v2(%{node: {:stack, opts, children}}) do
     class = class_with_default(opts, :stack)
     html(:div, [class: class], Enum.map(children_to_list(children), &render_child/1))
   end
 
-  defp render_node(%{node: {:center, opts, children}}) do
+  defp render_node_v2(%{node: {:center, opts, children}}) do
     class = class_with_default(opts, :center)
     html(:div, [class: class], Enum.map(children_to_list(children), &render_child/1))
   end
 
-  defp render_node(%{node: {:segment, opts, children}}) do
+  defp render_node_v2(%{node: {:segment, opts, children}}) do
     class = class_with_default(opts, :segment)
     html(:div, [class: class], Enum.map(children_to_list(children), &render_child/1))
   end
 
-  defp render_node(%{node: {:sidebar, opts, children}}) do
+  defp render_node_v2(%{node: {:sidebar, opts, children}}) do
     class = class_with_default(opts, :sidebar)
     html(:aside, [class: class], Enum.map(children_to_list(children), &render_child/1))
   end
@@ -341,31 +368,31 @@ defmodule Flotilla.Renderer do
   # New components — text
   # ---------------------------------------------------------------------------
 
-  defp render_node(%{node: {:label, opts, content}}) do
+  defp render_node_v2(%{node: {:label, opts, content}}) do
     class = class_with_default(opts, :label)
     attrs = build_attrs(class, opts, [:class, :id, :for])
     {:safe, ["<label", attrs, ">", escape_html(content), "</label>"]}
   end
 
-  defp render_node(%{node: {:code, opts, content}}) do
+  defp render_node_v2(%{node: {:code, opts, content}}) do
     class = class_with_default(opts, :code)
     attrs = build_attrs(class, opts, [:class, :id])
     {:safe, ["<code", attrs, ">", escape_html(content), "</code>"]}
   end
 
-  defp render_node(%{node: {:pre, opts, content}}) do
+  defp render_node_v2(%{node: {:pre, opts, content}}) do
     class = class_with_default(opts, :pre)
     attrs = build_attrs(class, opts, [:class, :id])
     {:safe, ["<pre", attrs, ">", escape_html(content), "</pre>"]}
   end
 
-  defp render_node(%{node: {:kbd, opts, content}}) do
+  defp render_node_v2(%{node: {:kbd, opts, content}}) do
     class = class_with_default(opts, :kbd)
     attrs = build_attrs(class, opts, [:class, :id])
     {:safe, ["<kbd", attrs, ">", escape_html(content), "</kbd>"]}
   end
 
-  defp render_node(%{node: {:blockquote, opts, content}}) do
+  defp render_node_v2(%{node: {:blockquote, opts, content}}) do
     class = class_with_default(opts, :blockquote)
     cite = Keyword.get(opts, :cite)
     base = build_attrs(class, opts, [:class, :id])
@@ -376,7 +403,7 @@ defmodule Flotilla.Renderer do
     {:safe, ["<blockquote", attrs, ">", escape_html(content), "</blockquote>"]}
   end
 
-  defp render_node(%{node: {:link, opts, label}}) do
+  defp render_node_v2(%{node: {:link, opts, label}}) do
     class = class_with_default(opts, :link)
     to = Keyword.get(opts, :to)
     msg = Keyword.get(opts, :msg)
@@ -395,7 +422,7 @@ defmodule Flotilla.Renderer do
     {:safe, ["<a", attrs, ">", escape_html(label), "</a>"]}
   end
 
-  defp render_node(%{node: {:icon, opts, name}}) do
+  defp render_node_v2(%{node: {:icon, opts, name}}) do
     class = class_with_default(opts, :icon)
     name_str = name |> to_string()
 
@@ -413,7 +440,7 @@ defmodule Flotilla.Renderer do
   # New components — forms
   # ---------------------------------------------------------------------------
 
-  defp render_node(%{node: {:form, opts, children}}) do
+  defp render_node_v2(%{node: {:form, opts, children}}) do
     class = class_with_default(opts, :form)
     method = Keyword.get(opts, :method, "post")
     action = Keyword.get(opts, :action, "")
@@ -430,7 +457,7 @@ defmodule Flotilla.Renderer do
      ["<form", attrs, ">", Enum.map(children_to_list(children), &render_child/1), "</form>"]}
   end
 
-  defp render_node(%{node: {:field, opts, child}}) do
+  defp render_node_v2(%{node: {:field, opts, child}}) do
     class = class_with_default(opts, :field)
     label_text = Keyword.get(opts, :label)
     hint = Keyword.get(opts, :hint)
@@ -467,14 +494,14 @@ defmodule Flotilla.Renderer do
        class,
        "\">",
        label_node,
-       render_node(%{node: child}),
+       dispatch_node(%{node: child}),
        hint_node,
        error_node,
        "</div>"
      ]}
   end
 
-  defp render_node(%{node: {:textarea, opts, content}}) do
+  defp render_node_v2(%{node: {:textarea, opts, content}}) do
     class = class_with_default(opts, :textarea)
     base = [class: class]
 
@@ -488,7 +515,7 @@ defmodule Flotilla.Renderer do
     {:safe, ["<textarea", attrs, ">", escape_html(content), "</textarea>"]}
   end
 
-  defp render_node(%{node: {:radio_group, opts, options}}) do
+  defp render_node_v2(%{node: {:radio_group, opts, options}}) do
     class = class_with_default(opts, :radio_group)
     selected = Keyword.get(opts, :value)
     name = Keyword.get(opts, :name, "radio")
@@ -518,7 +545,7 @@ defmodule Flotilla.Renderer do
     {:safe, ["<div class=\"", class, "\">", rendered, "</div>"]}
   end
 
-  defp render_node(%{node: {:switch, opts, nil}}) do
+  defp render_node_v2(%{node: {:switch, opts, nil}}) do
     class = class_with_default(opts, :switch)
     checked = Keyword.get(opts, :checked, false)
     bg = if checked, do: " bg-blue-500", else: ""
@@ -544,7 +571,7 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:slider, opts, nil}}) do
+  defp render_node_v2(%{node: {:slider, opts, nil}}) do
     class = class_with_default(opts, :slider)
     min = Keyword.get(opts, :min, 0)
     max = Keyword.get(opts, :max, 100)
@@ -575,7 +602,7 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:datepicker, opts, nil}}) do
+  defp render_node_v2(%{node: {:datepicker, opts, nil}}) do
     class = class_with_default(opts, :datepicker)
     value = Keyword.get(opts, :value)
 
@@ -604,7 +631,7 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:submit, opts, label}}) do
+  defp render_node_v2(%{node: {:submit, opts, label}}) do
     class = class_with_default(opts, :submit)
     attrs = build_attrs(class, opts, [:class, :id, :type, :disabled])
     {:safe, ["<button type=\"submit\"", attrs, ">", escape_html(label), "</button>"]}
@@ -614,7 +641,7 @@ defmodule Flotilla.Renderer do
   # New components — navigation
   # ---------------------------------------------------------------------------
 
-  defp render_node(%{node: {:menu, opts, children}}) do
+  defp render_node_v2(%{node: {:menu, opts, children}}) do
     class = class_with_default(opts, :menu)
     orientation = Keyword.get(opts, :orientation, :horizontal)
 
@@ -627,7 +654,7 @@ defmodule Flotilla.Renderer do
     html(html_tag, [class: full], Enum.map(children_to_list(children), &render_child/1))
   end
 
-  defp render_node(%{node: {:breadcrumb, opts, items}}) do
+  defp render_node_v2(%{node: {:breadcrumb, opts, items}}) do
     class = class_with_default(opts, :breadcrumb)
 
     rendered =
@@ -635,7 +662,7 @@ defmodule Flotilla.Renderer do
       |> Enum.with_index()
       |> Enum.map(fn {item, idx} ->
         last = idx == length(items) - 1
-        node_html = render_node(%{node: item})
+        node_html = dispatch_node(%{node: item})
         sep = if last, do: "", else: ~s(<span class="text-gray-400">/</span>)
         {:safe, [node_html, sep]}
       end)
@@ -643,7 +670,7 @@ defmodule Flotilla.Renderer do
     {:safe, ["<nav class=\"", class, "\">", rendered, "</nav>"]}
   end
 
-  defp render_node(%{node: {:pagination, opts, nil}}) do
+  defp render_node_v2(%{node: {:pagination, opts, nil}}) do
     class = class_with_default(opts, :pagination)
     current = Keyword.get(opts, :current_page, 1)
     total = Keyword.get(opts, :total_pages, 1)
@@ -679,7 +706,7 @@ defmodule Flotilla.Renderer do
     {:safe, ["<div class=\"", class, "\">", buttons, "</div>"]}
   end
 
-  defp render_node(%{node: {:tabs, opts, nil}}) do
+  defp render_node_v2(%{node: {:tabs, opts, nil}}) do
     class = class_with_default(opts, :tabs)
     tabs = Keyword.get(opts, :tabs, [])
     active = Keyword.get(opts, :active)
@@ -711,12 +738,12 @@ defmodule Flotilla.Renderer do
     {:safe, ["<div class=\"", class, "\">", rendered, "</div>"]}
   end
 
-  defp render_node(%{node: {:navbar, opts, children}}) do
+  defp render_node_v2(%{node: {:navbar, opts, children}}) do
     class = class_with_default(opts, :navbar)
     html(:nav, [class: class], Enum.map(children_to_list(children), &render_child/1))
   end
 
-  defp render_node(%{node: {:stepper, opts, nil}}) do
+  defp render_node_v2(%{node: {:stepper, opts, nil}}) do
     class = class_with_default(opts, :stepper)
     steps = Keyword.get(opts, :steps, [])
     active = Keyword.get(opts, :active, 0)
@@ -761,7 +788,7 @@ defmodule Flotilla.Renderer do
   # New components — data display
   # ---------------------------------------------------------------------------
 
-  defp render_node(%{node: {:stat, opts, %{label: label, value: value}}}) do
+  defp render_node_v2(%{node: {:stat, opts, %{label: label, value: value}}}) do
     class = class_with_default(opts, :stat)
     trend = Keyword.get(opts, :trend)
 
@@ -786,7 +813,7 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:timeline, opts, events}}) do
+  defp render_node_v2(%{node: {:timeline, opts, events}}) do
     class = class_with_default(opts, :timeline)
 
     rendered =
@@ -812,7 +839,7 @@ defmodule Flotilla.Renderer do
     {:safe, ["<div class=\"", class, "\">", rendered, "</div>"]}
   end
 
-  defp render_node(%{node: {:avatar, opts, src}}) do
+  defp render_node_v2(%{node: {:avatar, opts, src}}) do
     class = class_with_default(opts, :avatar)
     name = Keyword.get(opts, :name, "")
 
@@ -839,7 +866,7 @@ defmodule Flotilla.Renderer do
     end
   end
 
-  defp render_node(%{node: {:tree, opts, items}}) do
+  defp render_node_v2(%{node: {:tree, opts, items}}) do
     class = class_with_default(opts, :tree)
     expanded = Keyword.get(opts, :expanded, [])
 
@@ -896,7 +923,7 @@ defmodule Flotilla.Renderer do
   # New components — feedback / states
   # ---------------------------------------------------------------------------
 
-  defp render_node(%{node: {:progress, opts, fraction}}) do
+  defp render_node_v2(%{node: {:progress, opts, fraction}}) do
     class = class_with_default(opts, :progress)
     pct = max(0, min(100, fraction * 100))
     label = Keyword.get(opts, :label)
@@ -925,7 +952,7 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:alert, opts, message}}) do
+  defp render_node_v2(%{node: {:alert, opts, message}}) do
     class = class_with_default(opts, :alert)
     tone = Keyword.get(opts, :tone, :info)
     title = Keyword.get(opts, :title)
@@ -963,7 +990,7 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:toast, opts, message}}) do
+  defp render_node_v2(%{node: {:toast, opts, message}}) do
     class = class_with_default(opts, :toast)
     tone = Keyword.get(opts, :tone, :info)
 
@@ -979,7 +1006,7 @@ defmodule Flotilla.Renderer do
     {:safe, ["<div class=\"", full_class, "\" role=\"status\">", escape_html(message), "</div>"]}
   end
 
-  defp render_node(%{node: {:skeleton, opts, nil}}) do
+  defp render_node_v2(%{node: {:skeleton, opts, nil}}) do
     class = class_with_default(opts, :skeleton)
     width = Keyword.get(opts, :width, "100%")
     height = Keyword.get(opts, :height, "1em")
@@ -996,7 +1023,7 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:notification, opts, message}}) do
+  defp render_node_v2(%{node: {:notification, opts, message}}) do
     class = class_with_default(opts, :notification)
     unread = Keyword.get(opts, :unread, false)
 
@@ -1012,7 +1039,7 @@ defmodule Flotilla.Renderer do
   # Loader-aware data components — delegate to Flotilla.Loader when present
   # ---------------------------------------------------------------------------
 
-  defp render_node(%{node: {:table, opts, rows}}) do
+  defp render_node_v2(%{node: {:table, opts, rows}}) do
     class = class_with_default(opts, :table)
     columns = Keyword.get(opts, :columns, [])
 
@@ -1044,7 +1071,7 @@ defmodule Flotilla.Renderer do
      ]}
   end
 
-  defp render_node(%{node: {:list, opts, items}}) do
+  defp render_node_v2(%{node: {:list, opts, items}}) do
     class = class_with_default(opts, :list)
     item_fun = Keyword.get(opts, :item)
 
@@ -1068,7 +1095,7 @@ defmodule Flotilla.Renderer do
 
   # Unknown tag — best-effort fallback. Renders as a div with the tag's atom
   # in data-tag so the user can debug without losing content.
-  defp render_node(%{node: {tag, opts, content}}) when is_atom(tag) do
+  defp render_node_v2(%{node: {tag, opts, content}}) when is_atom(tag) do
     children = children_to_list(content) |> Enum.map(&render_child/1)
     class = Keyword.get(opts, :class, "")
 
