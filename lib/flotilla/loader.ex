@@ -41,7 +41,7 @@ defmodule Flotilla.Loader do
   Useful as a fallback in code paths that should still work without
   the parallel engine.
   """
-  @spec run_or_sequential([ (-> any()) ], keyword()) :: [any()]
+  @spec run_or_sequential([(-> any())], keyword()) :: [any()]
   def run_or_sequential(loaders, _opts \\ []) when is_list(loaders) do
     if arrea_available?() do
       case run(loaders) do
