@@ -398,8 +398,10 @@ defmodule Flotilla.Components do
       stat("Total users", "1,234", trend: :up)
   """
   @spec stat(String.t(), term(), keyword()) :: VDOM.t()
-  def stat(label, value, opts \\ []) when is_binary(label),
+  def stat(label, value, opts) when is_binary(label),
     do: VDOM.node(:stat, opts, %{label: label, value: to_string(value)})
+
+  def stat(label, value), do: stat(label, value, [])
 
   @doc """
   Timeline of events. `events` is a list of maps with `:date` (or `:when`)
@@ -446,9 +448,11 @@ defmodule Flotilla.Components do
   Progress bar. `fraction` is `0.0..1.0`. Pass `:label` for a
   descriptive label and `:value` to override the displayed percentage.
   """
-  @spec progress(float(), keyword()) :: VDOM.t()
-  def progress(fraction, opts \\ []) when is_number(fraction),
+  @spec progress(number(), keyword()) :: VDOM.t()
+  def progress(fraction, opts) when is_number(fraction),
     do: VDOM.node(:progress, opts, fraction)
+
+  def progress(fraction), do: progress(fraction, [])
 
   @doc """
   Inline alert / callout. `:tone:` (`:info` / `:success` / `:warning` /
