@@ -99,10 +99,7 @@ defmodule Flotilla.Colors do
     if pairs == [] do
       ""
     else
-      body =
-        pairs
-        |> Enum.map(fn {k, v} -> "#{k}: #{v};" end)
-        |> Enum.join(" ")
+      body = Enum.map_join(pairs, " ", fn {k, v} -> "#{k}: #{v};" end)
 
       ~s(style="#{body}")
     end

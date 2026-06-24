@@ -84,7 +84,7 @@ defmodule Flotilla.Renderer do
   `Phoenix.LiveView.TagEngine.component/3`). The user's `render/1`
   callback is expected to return this directly.
   """
-  @spec to_heex(VDOM.t()) :: Phoenix.LiveView.LiveStruct.t()
+  @spec to_heex(VDOM.t()) :: LiveStruct.t()
   def to_heex(vdom) do
     env = __ENV__
 
@@ -1180,21 +1180,21 @@ defmodule Flotilla.Renderer do
 
   defp render_table_rows(rows, columns) do
     Enum.map(rows, fn row ->
-      cells =
-        Enum.map(columns, fn col ->
-          value =
-            cond do
-              is_map(row) and is_atom(col) -> Map.get(row, col, "")
-              is_map(row) and is_binary(col) -> Map.get(row, col, "")
-              is_list(row) and is_integer(col) -> Enum.at(row, col, "") |> to_string()
-              true -> ""
-            end
-
-          {:safe, ["<td>", escape_html(to_string(value)), "</td>"]}
-        end)
-
+      cells = Enum.map(columns, fn col -> cell_html(cell_value(row, col)) end)
       {:safe, ["<tr>", cells, "</tr>"]}
     end)
+  end
+
+  defp cell_value(row, col) when is_map(row) and is_atom(col), do: Map.get(row, col, "")
+  defp cell_value(row, col) when is_map(row) and is_binary(col), do: Map.get(row, col, "")
+
+  defp cell_value(row, col) when is_list(row) and is_integer(col),
+    do: row |> Enum.at(col, "") |> to_string()
+
+  defp cell_value(_row, _col), do: ""
+
+  defp cell_html(value) do
+    {:safe, ["<td>", escape_html(to_string(value)), "</td>"]}
   end
 
   defp rendered_item(nil, item), do: escape_html(to_string(item))
