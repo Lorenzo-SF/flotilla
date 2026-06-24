@@ -66,7 +66,8 @@ Wire it in your router as a regular LiveView:
 live "/dashboard", MyAppWeb.DashboardLive, :index
 ```
 
-That's it — no template file, no separate `mount`, no `handle_event` boilerplate.
+That's it — no template file, no separate `mount`, no `handle_event`
+boilerplate.
 
 ## How it works
 
@@ -103,9 +104,9 @@ That's it — no template file, no separate `mount`, no `handle_event` boilerpla
 | **Data** | `table`, `list`, `key_value` |
 | **States** | `spinner`, `empty`, `error` |
 
-All helpers accept an `opts` keyword list; pass `:class` to override the
-default Tailwind classes, `:msg` to wire `phx-click`, `:on_change` to
-wire `phx-change`, etc.
+All helpers accept an `opts` keyword list; pass `:class` to override
+the default Tailwind classes, `:msg` to wire `phx-click`, `:on_change`
+to wire `phx-change`, etc.
 
 ## Why not just write HEEx?
 
@@ -126,10 +127,11 @@ tree. Just `use Flotilla.View` and you're set.
 Optional dev dependencies (only used by `mix format` / `mix credo` /
 `mix dialyzer`) are pulled in via the `mix.exs` `deps/0` function.
 
+## Documentation
+
+- `README.md` — this file (English)
+- `docs/README.es.md` — Spanish version
+
 ## License
 
 MIT — see [LICENSE.md](LICENSE.md).
-
----
-
-**For Spanish documentation, see [README_ES.md](README_ES.md).**
