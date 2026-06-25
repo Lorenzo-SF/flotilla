@@ -211,27 +211,27 @@ defmodule Flotilla.Renderer do
           sel = if value == selected, do: " selected", else: ""
 
           [
-             "<option value=\"",
-             escape_attr(to_string(value)),
-             "\"",
-             sel,
-             ">",
-             escape_html(label),
-             "</option>"
-           ]
+            "<option value=\"",
+            escape_attr(to_string(value)),
+            "\"",
+            sel,
+            ">",
+            escape_html(label),
+            "</option>"
+          ]
 
         value when is_binary(value) ->
           sel = if value == selected, do: " selected", else: ""
 
           [
-             "<option value=\"",
-             escape_attr(value),
-             "\"",
-             sel,
-             ">",
-             escape_html(value),
-             "</option>"
-           ]
+            "<option value=\"",
+            escape_attr(value),
+            "\"",
+            sel,
+            ">",
+            escape_html(value),
+            "</option>"
+          ]
       end)
 
     ["<select", attrs, ">", rendered_opts, "</select>"]
