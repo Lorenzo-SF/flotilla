@@ -158,7 +158,7 @@ defmodule Flotilla.ComponentsTest do
         assert is_list(opts)
         # content may be nil for self-closing tags like :spinner, :skeleton
         assert is_nil(content) or is_list(content) or is_binary(content) or is_map(content) or
-                 is_integer(content) or is_float(content)
+                 is_integer(content) or is_float(content) or is_atom(content) or is_tuple(content)
       end
     end
   end
