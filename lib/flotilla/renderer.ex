@@ -402,7 +402,7 @@ defmodule Flotilla.Renderer do
 
     case merged do
       [] -> []
-      _ -> attrs_to_safe_string(merged)
+      _ -> [attrs_to_safe_string(merged)]
     end
   end
 
@@ -422,17 +422,11 @@ defmodule Flotilla.Renderer do
   end
 
   defp html(tag_atom, attrs, children) do
-    attrs_iodata =
-      case attrs_to_safe_string(attrs) do
-        {:safe, str} -> [{:safe, str}]
-        other -> other
-      end
-
     {:safe,
      [
        "<",
        Atom.to_string(tag_atom),
-       attrs_iodata,
+       attrs,
        ">",
        children,
        "</",
