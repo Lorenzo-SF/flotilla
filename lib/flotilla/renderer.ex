@@ -389,9 +389,13 @@ defmodule Flotilla.Renderer do
   # Builds an attribute list, keeping only the keys in `allowed` from opts
   # and merging with the defaults.
   defp build_attrs(default_attrs, opts, allowed) do
-    # Merge defaults with allowed opts, opts wins. Drop nils.
+    # default_attrs may be a string (the class default) or a keyword list.
+    # Normalise to a keyword list, then merge opts (opts wins), filter by
+    # allowed, drop nils.
+    base = if is_binary(default_attrs), do: [class: default_attrs], else: default_attrs
+
     merged =
-      default_attrs
+      base
       |> Keyword.merge(opts)
       |> Keyword.take(allowed)
       |> Keyword.reject(fn {_k, v} -> is_nil(v) end)
@@ -414,15 +418,21 @@ defmodule Flotilla.Renderer do
         {k, v} -> " #{k}=\"#{escape_attr(to_string(v))}\""
       end)
 
-    [{:safe, Enum.join(pieces, "")}]
+    {:safe, Enum.join(pieces, "")}
   end
 
   defp html(tag_atom, attrs, children) do
+    attrs_iodata =
+      case attrs_to_safe_string(attrs) do
+        {:safe, str} -> [{:safe, str}]
+        other -> other
+      end
+
     {:safe,
      [
        "<",
        Atom.to_string(tag_atom),
-       attrs_to_safe_string(attrs),
+       attrs_iodata,
        ">",
        children,
        "</",
