@@ -389,11 +389,18 @@ defmodule Flotilla.Renderer do
     # allowed, drop nils.
     base = if is_binary(default_attrs), do: [class: default_attrs], else: default_attrs
 
+    # Always keep dynamic phx-* and :checked attrs that callers injected
+    # into base (e.g. phx-click from msg:, phx-change from on_change).
+    # Other base attrs are filtered by the allowed list.
+    phx_keys = [:"phx-click", :"phx-change", :"phx-value", :checked]
+
     merged =
       base
       |> Keyword.merge(opts)
-      |> Keyword.take(allowed)
-      |> Keyword.reject(fn {_k, v} -> is_nil(v) end)
+      |> Enum.reject(fn {k, v} -> is_nil(v) end)
+      |> Enum.filter(fn
+        {k, _} -> k in allowed or k in phx_keys
+      end)
 
     case merged do
       [] -> []
