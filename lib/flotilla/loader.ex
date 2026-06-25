@@ -27,7 +27,8 @@ defmodule Flotilla.Loader do
 
   Mirrors `Arrea.run_sync/2`'s signature.
   """
-  @spec run([(-> any()) | term()], keyword()) :: {:ok, [any()]} | {:error, term()}
+  @spec run([(-> any()) | term()], keyword()) ::
+          {:ok, [{:ok, any()} | {:error, term()}]} | {:error, term()}
   def run(loaders, opts \\ []) when is_list(loaders) do
     if arrea_available?() do
       Arrea.run_sync(loaders, opts)
@@ -42,6 +43,7 @@ defmodule Flotilla.Loader do
   the parallel engine.
   """
   @spec run_or_sequential([(-> any())], keyword()) :: [any()]
+  @dialyzer {:nowarn_function, run_or_sequential: 2}
   def run_or_sequential(loaders, opts \\ []) when is_list(loaders) do
     case run(loaders, opts) do
       {:ok, results} -> results
