@@ -252,7 +252,7 @@ defmodule Flotilla.Renderer do
         ev -> [{:"phx-change", to_string(ev)} | base]
       end
 
-    attrs = build_attrs(attrs, opts, [:class, :id, :type, :name, :value])
+    attrs = build_attrs(attrs, opts, [:class, :id, :type, :name, :value, :checked])
     ["<input", attrs, "/>"]
   end
 
@@ -262,12 +262,12 @@ defmodule Flotilla.Renderer do
     rows =
       Enum.map(pairs, fn {k, v} ->
         [
-           "<tr><th class=\"text-left pr-4 align-top\">",
-           escape_html(to_string(k)),
-           "</th><td>",
-           escape_html(to_string(v)),
-           "</td></tr>"
-         ]
+          "<tr><th class=\"text-left pr-4 align-top\">",
+          escape_html(to_string(k)),
+          "</th><td>",
+          escape_html(to_string(v)),
+          "</td></tr>"
+        ]
       end)
 
     ["<table class=\"", class, "\"><tbody>", rows, "</tbody></table>"]
@@ -413,17 +413,27 @@ defmodule Flotilla.Renderer do
   end
 
   defp html(tag_atom, attrs, children) do
+    # attrs may be a keyword list [class: "..."] or a plain string.
+    # Normalise to a string so iolist_to_binary accepts it.
+    attrs_str = attrs_to_iodata(attrs)
+
     [
-       "<",
-       Atom.to_string(tag_atom),
-       attrs,
-       ">",
-       children,
-       "</",
-       Atom.to_string(tag_atom),
-       ">"
-     ]
+      "<",
+      Atom.to_string(tag_atom),
+      attrs_str,
+      ">",
+      children,
+      "</",
+      Atom.to_string(tag_atom),
+      ">"
+    ]
   end
+
+  defp attrs_to_iodata(list) when is_list(list) and list != [] and is_tuple(hd(list)) do
+    Enum.map_join(list, "", &attr_to_string/1)
+  end
+
+  defp attrs_to_iodata(other), do: other
 
   defp escape_html(str) when is_binary(str) do
     str
