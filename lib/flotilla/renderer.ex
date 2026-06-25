@@ -402,7 +402,7 @@ defmodule Flotilla.Renderer do
 
     case merged do
       [] -> []
-      _ -> [Enum.map_join(merged, "", &attr_to_string/1)]
+      _ -> Enum.map_join(merged, "", &attr_to_string/1)
     end
   end
 
@@ -414,21 +414,15 @@ defmodule Flotilla.Renderer do
   # Build " key=\"value\" key2=\"value2\"" from a keyword list.
   # Used by html/3 for tags that build attrs inline.
   defp attrs_to_safe_string(attrs) do
-    {:safe, Enum.map_join(attrs, "", &attr_to_string/1)}
+    Enum.map_join(attrs, "", &attr_to_string/1)
   end
 
   defp html(tag_atom, attrs, children) do
-    attrs_str =
-      case attrs do
-        list when is_list(list) -> [attrs_to_safe_string(list)]
-        other -> other
-      end
-
     {:safe,
      [
        "<",
        Atom.to_string(tag_atom),
-       attrs_str,
+       attrs,
        ">",
        children,
        "</",
