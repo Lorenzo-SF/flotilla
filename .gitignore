@@ -24,3 +24,25 @@ flotilla-*.tar
 
 # Temporary files for e.g. tests.
 /tmp/
+
+# Elixir Lang Server artifacts
+.elixir_ls/
+
+# BEAM compiled files
+*.beam
+
+# Dialyzer PLT files
+*.plt
+
+# Hex search index
+.hex/
+
+# Generated Phoenix assets (not used by flotilla but harmless)
+priv/static/
+
+# Cached docs
+doc/_build/
+
+# OS junk
+.DS_Store
+Thumbs.db
