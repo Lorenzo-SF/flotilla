@@ -402,31 +402,33 @@ defmodule Flotilla.Renderer do
 
     case merged do
       [] -> []
-      _ -> [attrs_to_safe_string(merged)]
+      _ -> [Enum.map_join(merged, "", &attr_to_string/1)]
     end
   end
 
-  # Build " key=\"value\" key2=\"value2\"" from a keyword list.
-  # We render manually because each Phoenix.LiveView callback expects an
-  # iodata; for these tests we keep things simple and use {:safe, ...}.
-  defp attrs_to_safe_string(attrs) do
-    pieces =
-      Enum.map(attrs, fn
-        {k, true} -> " #{k}=\"true\""
-        {k, false} -> " #{k}=\"false\""
-        {_k, nil} -> ""
-        {k, v} -> " #{k}=\"#{escape_attr(to_string(v))}\""
-      end)
+  defp attr_to_string({k, true}), do: " #{k}=\"true\""
+  defp attr_to_string({k, false}), do: " #{k}=\"false\""
+  defp attr_to_string({_k, nil}), do: ""
+  defp attr_to_string({k, v}), do: " #{k}=\"#{escape_attr(to_string(v))}\""
 
-    {:safe, Enum.join(pieces, "")}
+  # Build " key=\"value\" key2=\"value2\"" from a keyword list.
+  # Used by html/3 for tags that build attrs inline.
+  defp attrs_to_safe_string(attrs) do
+    {:safe, Enum.map_join(attrs, "", &attr_to_string/1)}
   end
 
   defp html(tag_atom, attrs, children) do
+    attrs_str =
+      case attrs do
+        list when is_list(list) -> [attrs_to_safe_string(list)]
+        other -> other
+      end
+
     {:safe,
      [
        "<",
        Atom.to_string(tag_atom),
-       attrs,
+       attrs_str,
        ">",
        children,
        "</",
