@@ -397,7 +397,7 @@ defmodule Flotilla.Components do
 
       stat("Total users", "1,234", trend: :up)
   """
-  @spec stat(String.t(), term(), keyword()) :: VDOM.t()
+  @spec stat(String.t(), any(), keyword()) :: VDOM.t()
   def stat(label, value, opts) when is_binary(label),
     do: VDOM.node(:stat, opts, %{label: label, value: to_string(value)})
 

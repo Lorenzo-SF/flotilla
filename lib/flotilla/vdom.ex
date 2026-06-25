@@ -87,7 +87,7 @@ defmodule Flotilla.VDOM do
 
   @type opts :: keyword()
 
-  @type child :: t() | String.t() | nil
+  @type child :: t() | String.t() | nil | number() | map()
 
   @type t ::
           {tag(), opts(), child() | [child()]}
